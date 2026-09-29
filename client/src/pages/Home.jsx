@@ -250,7 +250,7 @@ export default function Home() {
                   {errors.telephone ? (
                     <span className="field-error">{errors.telephone}</span>
                   ) : (
-                    <span className="hint">Format sénégalais : 77 XXX XX XX</span>
+                    <span className="hint">Format sénégalais : 9 chiffres (XX XXX XX XX)</span>
                   )}
                 </div>
 

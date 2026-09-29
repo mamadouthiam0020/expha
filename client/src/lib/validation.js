@@ -15,8 +15,11 @@ export function normalizePhone(value) {
   return digits;
 }
 
+/** Groupes du format lisible : XX XXX XX XX */
+const PHONE_GROUPES = [2, 3, 2, 2];
+
 export function formatPhoneInput(value) {
-  // Affichage lisible pendant la saisie : 77 XXX XX XX
+  // Affichage lisible pendant la saisie : 77 123 45 67
   // (les prefixes 00221 / +221 / 221 saisis sont absorbes)
   let digits = String(value || '')
     .replace(/\D/g, '')
@@ -25,7 +28,15 @@ export function formatPhoneInput(value) {
   if (digits.startsWith('221') && digits.length > 9) digits = digits.slice(3);
   digits = digits.slice(0, 9);
   if (!digits) return '';
-  return digits.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+
+  const parts = [];
+  let reste = digits;
+  for (const taille of PHONE_GROUPES) {
+    if (!reste) break;
+    parts.push(reste.slice(0, taille));
+    reste = reste.slice(taille);
+  }
+  return parts.join(' ');
 }
 
 /**

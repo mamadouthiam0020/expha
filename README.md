@@ -21,7 +21,7 @@ consulter **en temps réel** depuis un espace administrateur.
 * Bandeau d'accueil : titre, **17 OCTOBRE 2026**, 📍 Hôtel Africa Queen – Somone,
   **Organisé par EXPHA**, **Avec le Professeur Bamba Ndiaye**.
 * Formulaire d'inscription **centré**, 7 champs, **tous obligatoires** :
-  Nom, Prénom, Numéro de téléphone (formaté `77 XXX XX XX`), Structure médicale,
+  Nom, Prénom, Numéro de téléphone (formaté `XX XXX XX XX`), Structure médicale,
   Invité(e) par, Point de ramassage, Confirmation de présence (**Oui / Non**).
 * Les invités sont affichés avec leur civilité : **M.** si le nom commence par M,
   **Mme** sinon.

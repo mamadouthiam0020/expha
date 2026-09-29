@@ -22,9 +22,20 @@ export function formatInviter(value) {
   return /^m/i.test(nom) ? `M. ${nom}` : `Mme ${nom}`;
 }
 
-/** Numero de telephone lisible : 77 123 45 67. */
+/** Groupes du format lisible : XX XXX XX XX */
+const PHONE_GROUPES = [2, 3, 2, 2];
+
+/** Numero de telephone lisible : 77 123 45 67 */
 export function formatPhone(value) {
   const digits = String(value || '').replace(/\D/g, '');
   if (digits.length !== 9) return value || '';
-  return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7)}`;
+
+  const parts = [];
+  let reste = digits;
+  for (const taille of PHONE_GROUPES) {
+    if (!reste) break;
+    parts.push(reste.slice(0, taille));
+    reste = reste.slice(taille);
+  }
+  return parts.join(' ');
 }

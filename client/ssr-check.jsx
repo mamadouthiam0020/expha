@@ -32,6 +32,7 @@ check('libelle du formulaire', home.includes('Formulaire d&#x27;inscription'));
 check('champ Nom', home.includes('name="nom"'));
 check('champ Prenom', home.includes('name="prenom"'));
 check('champ Telephone (type tel)', home.includes('type="tel"'));
+check('format du telephone (XX XXX XX XX)', home.includes('placeholder="77 000 00 00"'));
 check('champ Structure medicale', home.includes('name="structureMedicale"'));
 check('champ Invite par', home.includes('name="invitePar"'));
 check('champ Point de ramassage', home.includes('name="pointRamassage"'));
