@@ -15,8 +15,6 @@ services:
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
-    # Laisse le temps au hub SSE de fermer proprement les clients connectes.
-    maxShutdownDelaySeconds: 60
     autoDeployTrigger: commit
     envVars:
       - key: NODE_VERSION
