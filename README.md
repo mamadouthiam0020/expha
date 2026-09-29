@@ -81,11 +81,11 @@ Expha/
 │   ├── src/pages/Admin.jsx   # espace administrateur
 │   ├── src/lib/              # api, validation, configuration
 │   ├── src/index.css         # design responsive
-│   ├── ssr-check.jsx         # 29 tests de rendu de l'interface
+│   ├── ssr-check.jsx         # 30 tests de rendu de l'interface
 │   └── ssr-event.js          # valeurs de secours alignées sur server/config/event.js
 └── scripts/
     ├── dev-with-mongo-memory.js  # API + MongoDB en mémoire (test local)
-    ├── smoke-test.js             # 66 tests de bout en bout
+    ├── smoke-test.js             # 67 tests de bout en bout
     └── verify-static.js          # vérification du service des fichiers
 ```
 
@@ -137,9 +137,9 @@ npm run check          # tout lancer
 
 | Commande | Ce qu'elle vérifie |
 | --- | --- |
-| `npm run smoke` | 66 tests API : validation, inscription, n° uniques, auth, recherche, filtres, exports CSV/Excel, flux SSE, suppression, anti-spam, sécurité |
+| `npm run smoke` | 67 tests API : validation, inscription, n° uniques, auth, recherche, filtres, exports CSV/Excel, flux SSE, suppression, anti-spam, sécurité |
 | `npm run verify:static` | 10 tests : Express sert bien le frontend compilé (`/`, `/admin`, routes inconnues, assets) |
-| `npm run verify:ui` | 29 tests : rendu React des pages, présence des 6 champs et des 8 options, page 404 |
+| `npm run verify:ui` | 30 tests : rendu React des pages, présence des 6 champs et des 9 options, page 404 |
 
 Les tests utilisent une base MongoDB **en mémoire** : aucune installation requise
 et aucun risque pour vos données.

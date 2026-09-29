@@ -74,7 +74,7 @@ async function run() {
     const event = await api('/api/event');
     check('GET /api/event', event.status === 200);
     check('5 options "Invite par"', event.payload.data.invitePar.length === 5);
-    check('3 options "Point de ramassage"', event.payload.data.pointRamassage.length === 3);
+    check('4 options "Point de ramassage"', event.payload.data.pointRamassage.length === 4);
 
     console.log('\n3. Validation du formulaire');
     const vide = await api('/api/registrations', { method: 'POST', body: {} });
@@ -113,16 +113,29 @@ async function run() {
         nom: 'Toure',
         prenom: 'Ibrahima',
         telephone: '701234599',
-        pointRamassage: 'EDK Pikine - Sortie 9 - Sedima',
+        pointRamassage: 'Sortie 9 - Sedima',
       },
     });
     check('tiret simple accepte et normalise', tiretDiff.status === 201,
       `recu ${tiretDiff.status}`);
     check(
       'libelle canonique conserve',
-      tiretDiff.payload?.data?.pointRamassage === 'EDK Pikine – Sortie 9 – Sedima',
+      tiretDiff.payload?.data?.pointRamassage === 'Sortie 9 – Sedima',
       tiretDiff.payload?.data?.pointRamassage
     );
+
+    const ancienneListe = await api('/api/registrations', {
+      method: 'POST',
+      body: {
+        ...VALID,
+        nom: 'Ancien',
+        prenom: 'Libelle',
+        telephone: '701234598',
+        pointRamassage: 'EDK Pikine – Sortie 9 – Sedima',
+      },
+    });
+    check('ancien libelle fusionne refuse (400)', ancienneListe.status === 400,
+      `recu ${ancienneListe.status}`);
 
     console.log('\n4. Inscription valide');
     const ok1 = await api('/api/registrations', { method: 'POST', body: VALID });

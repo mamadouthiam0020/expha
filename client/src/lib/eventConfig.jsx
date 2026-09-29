@@ -18,7 +18,7 @@ const FALLBACK = {
     'Mme Sow Aminata',
     'Mme Niang Cor',
   ],
-  pointRamassage: ['Terminus Dem Dikk', 'EDK Pikine – Sortie 9 – Sedima', 'HLM Grand-Yoff'],
+  pointRamassage: ['Terminus Dem Dikk', 'EDK Pikine', 'Sortie 9 – Sedima', 'HLM Grand-Yoff'],
 };
 
 const EventConfigContext = createContext(FALLBACK);

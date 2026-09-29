@@ -16,4 +16,9 @@ export const INVITE_PAR = [
   'Mme Niang Cor',
 ];
 
-export const POINTS_RAMASSAGE = ['Terminus Dem Dikk', 'EDK Pikine – Sortie 9 – Sedima', 'HLM Grand-Yoff'];
+export const POINTS_RAMASSAGE = [
+  'Terminus Dem Dikk',
+  'EDK Pikine',
+  'Sortie 9 – Sedima',
+  'HLM Grand-Yoff',
+];

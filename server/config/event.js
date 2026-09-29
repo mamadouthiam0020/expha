@@ -24,7 +24,8 @@ const INVITE_PAR = [
 
 const POINTS_RAMASSAGE = [
   'Terminus Dem Dikk',
-  'EDK Pikine – Sortie 9 – Sedima',
+  'EDK Pikine',
+  'Sortie 9 – Sedima',
   'HLM Grand-Yoff',
 ];
 
