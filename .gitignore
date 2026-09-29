@@ -1,0 +1,11 @@
+node_modules/
+client/dist/
+client/dist-ssr/
+.mongo-data/
+.env
+.env.local
+*.log
+npm-debug.log*
+.DS_Store
+.vscode/
+.idea/

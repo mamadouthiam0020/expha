@@ -1,0 +1,33 @@
+# Deploiement Blueprint Render
+# https://render.com/docs/blueprint-spec
+# Usage : depot GitHub -> dashboard.render.com -> New + > Blueprint > choisir ce depot
+#        puis saisir MONGODB_URI et ADMIN_PASSWORD dans le formulaire.
+
+services:
+  - type: web
+    name: expha-journee-inscriptions
+    runtime: node
+    plan: free
+    region: frankfurt # plus proche du Senegal
+    numInstances: 1 # le flux SSE (hub en memoire) suppose une seule instance
+    # --include=dev obligatoire : avec NODE_ENV=production, npm install saute
+    # les devDependencies (vite) et le build du client echoue.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    # Laisse le temps au hub SSE de fermer proprement les clients connectes.
+    maxShutdownDelaySeconds: 60
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: "22" # environnement reproductible
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false # saisir dans le dashboard Render (chiffre, non expose)
+      - key: JWT_SECRET
+        generateValue: true # Render genere un secret aleatoire a 256 bits
+      - key: ADMIN_PASSWORD
+        sync: false # saisir dans le dashboard Render
+      - key: RATE_LIMIT_MAX
+        value: "30" # inscriptions max par IP et par quart d'heure
