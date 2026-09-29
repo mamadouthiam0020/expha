@@ -8,7 +8,8 @@ import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router';
 import React from 'react';
 import App from './src/App';
-import { EVENT, INVITE_PAR, POINTS_RAMASSAGE } from './ssr-event';
+import { formatInviter } from './src/lib/format';
+import { EVENT, INVITE_PAR, POINTS_RAMASSAGE, PRESENCE } from './ssr-event';
 
 const checks = [];
 const check = (label, cond, detail) =>
@@ -34,11 +35,19 @@ check('champ Telephone (type tel)', home.includes('type="tel"'));
 check('champ Structure medicale', home.includes('name="structureMedicale"'));
 check('champ Invite par', home.includes('name="invitePar"'));
 check('champ Point de ramassage', home.includes('name="pointRamassage"'));
-check('bouton S inscrire', home.includes('S&#x27;inscrire'));
+check('champ Presence', home.includes('name="presence"'));
+check('question de presence', home.includes('Confirmez-vous votre présence'));
+PRESENCE.forEach((o) => check(`option presence : ${o}`, home.includes(`value="${o}"`)));
+check('bouton Soumettre le formulaire', home.includes('Soumettre le formulaire'));
+check('logo EXPHA dans la navigation', home.includes('class="brand-logo"'));
+check('signature du footer', home.includes('Made by Mounir DIGITAL'));
 check('lien vers admin', home.includes('/admin'));
-INVITE_PAR.forEach((o) => check(`option invite : ${o}`, home.includes(`>${o}<`)));
+INVITE_PAR.forEach((o) =>
+  check(`option invite : ${formatInviter(o)}`, home.includes(`>${formatInviter(o)}<`))
+);
 POINTS_RAMASSAGE.forEach((o) => check(`option ramassage : ${o}`, home.includes(`>${o}<`)));
-check('6 champs obligatoires', home.includes('class="required"'));
+check('7 champs obligatoires', (home.match(/class="required"/g) || []).length === 7,
+  `${(home.match(/class="required"/g) || []).length} occurrences`);
 
 const admin = renderAt('/admin');
 check('admin rendu (formulaire de connexion)', admin.includes('Espace administrateur'));

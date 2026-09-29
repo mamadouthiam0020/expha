@@ -20,8 +20,13 @@ consulter **en temps réel** depuis un espace administrateur.
 
 * Bandeau d'accueil : titre, **17 OCTOBRE 2026**, 📍 Hôtel Africa Queen – Somone,
   **Organisé par EXPHA**, **Avec le Professeur Bamba Ndiaye**.
-* Formulaire d'inscription **centré**, 6 champs, **tous obligatoires** :
-  Nom, Prénom, Numéro de téléphone, Structure médicale, Invité(e) par, Point de ramassage.
+* Formulaire d'inscription **centré**, 7 champs, **tous obligatoires** :
+  Nom, Prénom, Numéro de téléphone (formaté `77 XXX XX XX`), Structure médicale,
+  Invité(e) par, Point de ramassage, Confirmation de présence (**Oui / Non**).
+* Les invités sont affichés avec leur civilité : **M.** si le nom commence par M,
+  **Mme** sinon.
+* Points de ramassage : Terminus DEM DIK-HLM GRAND YOFF · EDK Pikine · Sortie 9 – Sedima.
+* Bouton **« Soumettre le formulaire »**.
 * Validation côté client **et** côté serveur — les soumissions vides ou invalides
   sont refusées (bouton désactivé visuellement, messages d'erreur champ par champ).
 * Après validation : message **« Votre inscription a bien été enregistrée. Merci et à bientôt ! »**,
@@ -33,10 +38,11 @@ consulter **en temps réel** depuis un espace administrateur.
 * Connexion par mot de passe simple (session JWT en cookie `httpOnly`).
 * Tableau **mis à jour en temps réel** (Server-Sent Events) sans rechargement de page.
 * Colonnes : N° · Nom · Prénom · Téléphone · Structure médicale · Invité(e) par ·
-  Point de ramassage · Date d'inscription.
-* **Nombre total d'inscrits** + résultats affichés + répartitions.
+  Point de ramassage · Présence · Date d'inscription.
+* **Nombre total d'inscrits** + résultats affichés + **présences confirmées** + répartitions.
 * **Recherche** par nom / prénom / téléphone (ou n° d'inscription).
-* **Filtres** par invité(e) par, point de ramassage, structure médicale (combinables).
+* **Filtres** par invité(e) par, point de ramassage, structure médicale, présence
+  (combinables).
 * **Export Excel (.xls) et CSV** — tenant compte des filtres actifs.
 * Tri, suppression d'une inscription, bouton d'actualisation manuelle.
 * Repli automatique : si le flux temps réel est coupé, rafraîchissement toutes les 20 s.
@@ -175,7 +181,8 @@ curl -X POST http://localhost:4000/api/registrations \
         "telephone": "77 123 45 67",
         "structureMedicale": "Centre de santé de Somone",
         "invitePar": "Maixent Dione",
-        "pointRamassage": "Terminus Dem Dikk"
+        "pointRamassage": "Terminus DEM DIK-HLM GRAND YOFF",
+        "presence": "Oui"
       }'
 ```
 
@@ -213,6 +220,7 @@ Registration
 ├── structureMedicale  String   requis
 ├── invitePar          String   requis (liste fermée)
 ├── pointRamassage     String   requis (liste fermée)
+├── presence           String   requis, enum : Oui | Non
 ├── numeroInscription  String   unique  ex. EXPHA-2026-0001
 ├── createdAt          Date     indexé
 └── updatedAt          Date
@@ -222,15 +230,24 @@ Collection **`counters`** : compteur atomique (`registration`) garantissant
 des numéros **uniques et sans trou**, même en cas d'inscriptions simultanées.
 
 Index : `numeroInscription` (unique), `createdAt`, `nom + prenom`, `invitePar`,
-`pointRamassage`, `structureMedicale`.
+`pointRamassage`, `structureMedicale`, `presence`.
+
+**Migrations automatiques** (`server/lib/migrations.js`, jouées à chaque démarrage) :
+les anciens libellés de liste (`HLM Grand-Yoff`, `Terminus Dem Dikk`, `Maguette Diop`)
+sont réécrits vers les libellés actuels, et les inscriptions sans confirmation de
+présence reçoivent la valeur par défaut `Oui`.
 
 ---
 
 ## 7. Personnaliser l'événement
 
 Tout est centralisé dans **`server/config/event.js`** : date, lieu, organisateur,
-intervenant, et les deux listes déroulantes. Ce fichier alimente l'API, qui
-distribue ensuite ces valeurs au frontend — **une seule modification à faire**.
+intervenant, et les listes déroulantes (invités, points de ramassage, réponses de
+présence). Ce fichier alimente l'API, qui distribue ensuite ces valeurs au
+frontend — **une seule modification à faire**.
+
+La **civilité** des invités (« M. » / « Mme ») est calculée par `formatInviter`
+dans le même fichier et par `client/src/lib/format.js` côté frontend.
 
 Les numéros d'inscription sont générés depuis `INSCRIPTION_PREFIX` dans le même
 fichier.

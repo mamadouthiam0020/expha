@@ -14,11 +14,12 @@ const FALLBACK = {
   invitePar: [
     'Maixent Dione',
     'Mme Gaye Khady Sokhna',
-    'Maguette Diop',
+    'Mme Maguette Diop',
     'Mme Sow Aminata',
     'Mme Niang Cor',
   ],
-  pointRamassage: ['Terminus Dem Dikk', 'EDK Pikine', 'Sortie 9 – Sedima', 'HLM Grand-Yoff'],
+  pointRamassage: ['Terminus DEM DIK-HLM GRAND YOFF', 'EDK Pikine', 'Sortie 9 – Sedima'],
+  presence: ['Oui', 'Non'],
 };
 
 const EventConfigContext = createContext(FALLBACK);
@@ -42,7 +43,10 @@ export function EventConfigProvider({ children }) {
     () => ({
       event: config.event || FALLBACK.event,
       invitePar: config.invitePar?.length ? config.invitePar : FALLBACK.invitePar,
-      pointRamassage: config.pointRamassage?.length ? config.pointRamassage : FALLBACK.pointRamassage,
+      pointRamassage: config.pointRamassage?.length
+        ? config.pointRamassage
+        : FALLBACK.pointRamassage,
+      presence: config.presence?.length ? config.presence : FALLBACK.presence,
     }),
     [config]
   );

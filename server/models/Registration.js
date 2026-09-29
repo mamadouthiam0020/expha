@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 
-const { INVITE_PAR, POINTS_RAMASSAGE } = require('../config/event');
+const { INVITE_PAR, POINTS_RAMASSAGE, PRESENCE_CHOICES, PRESENCE_DEFAUT } = require('../config/event');
 
 /**
  * Un enregistrement = une inscription d'un participant.
@@ -51,6 +51,16 @@ const registrationSchema = new mongoose.Schema(
         message: 'Valeur de "Point de ramassage" non autorisee',
       },
     },
+    presence: {
+      type: String,
+      required: [true, 'La confirmation de presence est obligatoire'],
+      trim: true,
+      default: PRESENCE_DEFAUT,
+      enum: {
+        values: PRESENCE_CHOICES,
+        message: 'Valeur de "Confirmation de presence" non autorisee',
+      },
+    },
     numeroInscription: {
       type: String,
       required: true,
@@ -68,6 +78,7 @@ registrationSchema.index({ createdAt: -1 });
 registrationSchema.index({ nom: 1, prenom: 1 });
 registrationSchema.index({ invitePar: 1 });
 registrationSchema.index({ pointRamassage: 1 });
+registrationSchema.index({ presence: 1 });
 registrationSchema.index({ structureMedicale: 1 });
 
 registrationSchema.set('toJSON', {

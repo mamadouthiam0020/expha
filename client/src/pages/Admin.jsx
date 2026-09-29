@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useEventConfig } from '../lib/eventConfig';
+import { formatInviter, formatPhone } from '../lib/format';
+import logo from '../assets/image.png';
 import {
   login,
   logout,
@@ -19,6 +21,7 @@ const DEFAULT_FILTERS = {
   invitePar: '',
   pointRamassage: '',
   structureMedicale: '',
+  presence: '',
   sort: 'createdAtDesc',
 };
 
@@ -41,15 +44,6 @@ function formatDateTime(value) {
   )}:${pad(d.getMinutes())}`;
 }
 
-function formatPhone(tel) {
-  const digits = String(tel || '').replace(/\D/g, '');
-  if (digits.length === 9) return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(
-    5,
-    7
-  )} ${digits.slice(7)}`;
-  return tel || '';
-}
-
 export default function Admin() {
   const { event } = useEventConfig();
   const [auth, setAuth] = useState(getToken() ? 'checking' : 'anon');
@@ -63,8 +57,8 @@ export default function Admin() {
     items: [],
     total: 0,
     filteredCount: 0,
-    valeurs: { invitePar: [], pointRamassage: [], structures: [] },
-    repartition: { parInvite: [], parPoint: [] },
+    valeurs: { invitePar: [], pointRamassage: [], structures: [], presence: [] },
+    repartition: { parInvite: [], parPoint: [], parPresence: [] },
     dernieresInscription: null,
   });
   const [loadError, setLoadError] = useState('');
@@ -317,14 +311,15 @@ export default function Admin() {
   }
 
   const { items, total, filteredCount, valeurs, repartition } = data;
+  const confirmes = (repartition.parPresence || []).find((r) => r.value === 'Oui');
 
   return (
     <div className="page">
       <header className="site-header">
         <div className="container">
           <Link className="brand" to="/">
-            <span className="brand-mark">E</span>
-            <span>EXPHA — Admin</span>
+            <img className="brand-logo" src={logo} alt="EXPHA" />
+            <span className="brand-suffix">Admin</span>
           </Link>
           <div className="header-meta">
             <span className="hide-sm">{event.dateLabel}</span>
@@ -401,6 +396,12 @@ export default function Admin() {
               <div className="value">{repartition.parInvite.length}</div>
             </div>
             <div className="stat">
+              <div className="label">Présences confirmées</div>
+              <div className="value">
+                {confirmes ? `${confirmes.count}/${total}` : '—'}
+              </div>
+            </div>
+            <div className="stat">
               <div className="label">Structures</div>
               <div className="value">{valeurs.structures.length}</div>
             </div>
@@ -435,7 +436,7 @@ export default function Admin() {
                 <option value="">Tous</option>
                 {(valeurs.invitePar || []).map((v) => (
                   <option key={v} value={v}>
-                    {v}
+                    {formatInviter(v)}
                   </option>
                 ))}
               </select>
@@ -464,6 +465,21 @@ export default function Admin() {
               >
                 <option value="">Toutes</option>
                 {(valeurs.structures || []).map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="f-presence">Filtre : présence</label>
+              <select
+                id="f-presence"
+                value={filters.presence}
+                onChange={(e) => setFilters((p) => ({ ...p, presence: e.target.value }))}
+              >
+                <option value="">Tous</option>
+                {(valeurs.presence || []).map((v) => (
                   <option key={v} value={v}>
                     {v}
                   </option>
@@ -509,6 +525,7 @@ export default function Admin() {
                     <th scope="col">Structure médicale</th>
                     <th scope="col">Invité(e) par</th>
                     <th scope="col">Point de ramassage</th>
+                    <th scope="col">Présence</th>
                     <th scope="col">Date d'inscription</th>
                     <th scope="col">
                       <span className="sr-only">Actions</span>
@@ -518,7 +535,7 @@ export default function Admin() {
                 <tbody>
                   {items.length === 0 ? (
                     <tr>
-                      <td colSpan={9}>
+                      <td colSpan={10}>
                         <div className="empty">
                           <strong>Aucune inscription à afficher</strong>
                           {hasFilters
@@ -540,8 +557,15 @@ export default function Admin() {
                         <td>{item.prenom}</td>
                         <td className="tel">{formatPhone(item.telephone)}</td>
                         <td>{item.structureMedicale}</td>
-                        <td>{item.invitePar}</td>
+                        <td>{formatInviter(item.invitePar)}</td>
                         <td>{item.pointRamassage}</td>
+                        <td>
+                          <span
+                            className={`tag ${item.presence === 'Non' ? 'tag-no' : 'tag-yes'}`}
+                          >
+                            {item.presence || 'Oui'}
+                          </span>
+                        </td>
                         <td className="small muted">{formatDateTime(item.createdAt)}</td>
                         <td>
                           <button

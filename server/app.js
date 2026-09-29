@@ -9,7 +9,7 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
 const config = require('./config');
-const { EVENT, INVITE_PAR, POINTS_RAMASSAGE } = require('./config/event');
+const { EVENT, INVITE_PAR, POINTS_RAMASSAGE, PRESENCE_CHOICES } = require('./config/event');
 const registrationsRouter = require('./routes/registrations');
 const adminRouter = require('./routes/admin');
 const { verifyToken } = require('./middleware/auth');
@@ -66,7 +66,15 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/event', (req, res) => {
-  res.json({ ok: true, data: { event: EVENT, invitePar: INVITE_PAR, pointRamassage: POINTS_RAMASSAGE } });
+  res.json({
+    ok: true,
+    data: {
+      event: EVENT,
+      invitePar: INVITE_PAR,
+      pointRamassage: POINTS_RAMASSAGE,
+      presence: PRESENCE_CHOICES,
+    },
+  });
 });
 
 // 404 API

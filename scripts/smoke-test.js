@@ -48,7 +48,8 @@ const VALID = {
   telephone: '77 123 45 67',
   structureMedicale: 'Centre de sante de Somone',
   invitePar: 'Maixent Dione',
-  pointRamassage: 'Terminus Dem Dikk',
+  pointRamassage: 'Terminus DEM DIK-HLM GRAND YOFF',
+  presence: 'Oui',
 };
 
 async function run() {
@@ -74,14 +75,19 @@ async function run() {
     const event = await api('/api/event');
     check('GET /api/event', event.status === 200);
     check('5 options "Invite par"', event.payload.data.invitePar.length === 5);
-    check('4 options "Point de ramassage"', event.payload.data.pointRamassage.length === 4);
+    check('3 options "Point de ramassage"', event.payload.data.pointRamassage.length === 3);
+    check('point de ramassage cumule', event.payload.data.pointRamassage.includes(
+      'Terminus DEM DIK-HLM GRAND YOFF'
+    ));
+    check('2 options de presence', event.payload.data.presence.length === 2);
+    check('invitee "Mme Maguette Diop"', event.payload.data.invitePar.includes('Mme Maguette Diop'));
 
     console.log('\n3. Validation du formulaire');
     const vide = await api('/api/registrations', { method: 'POST', body: {} });
     check('POST vide refuse (400)', vide.status === 400, `recu ${vide.status}`);
     check(
-      '6 erreurs de champ renvoyees',
-      Object.keys(vide.payload.errors || {}).length === 6,
+      '7 erreurs de champ renvoyees',
+      Object.keys(vide.payload.errors || {}).length === 7,
       JSON.stringify(vide.payload.errors)
     );
 
@@ -93,6 +99,20 @@ async function run() {
     check('telephone manquant detecte', Boolean(incomplet.payload.errors?.telephone));
     check('invitePar manquant detecte', Boolean(incomplet.payload.errors?.invitePar));
     check('pointRamassage manquant detecte', Boolean(incomplet.payload.errors?.pointRamassage));
+    check('presence manquante detectee', Boolean(incomplet.payload.errors?.presence));
+
+    const mauvaisePresence = await api('/api/registrations', {
+      method: 'POST',
+      body: { ...VALID, presence: 'Peut-etre' },
+    });
+    check('presence hors liste refusee', mauvaisePresence.status === 400);
+
+    const presenceMinuscule = await api('/api/registrations', {
+      method: 'POST',
+      body: { ...VALID, nom: 'Fall', prenom: 'Seynabou', telephone: '780001122', presence: 'non' },
+    });
+    check('presence "non" normalisee en Non', presenceMinuscule.payload?.data?.presence === 'Non',
+      presenceMinuscule.payload?.data?.presence);
 
     const mauvaisTel = await api('/api/registrations', {
       method: 'POST',
@@ -151,15 +171,15 @@ async function run() {
       ok1.payload.data?.telephone);
 
     const autres = [
-      { ...VALID, nom: 'Sagna', prenom: 'Yacine', telephone: '+221781234567', invitePar: 'Maguette Diop', pointRamassage: 'HLM Grand-Yoff' },
-      { ...VALID, nom: 'Ndiaye', prenom: 'Aminata', telephone: '701112233', structureMedicale: 'Hopital Principal Dakar', invitePar: 'Mme Sow Aminata', pointRamassage: 'Terminus Dem Dikk' },
-      { ...VALID, nom: 'Fall', prenom: 'Moussa', telephone: '778899001', structureMedicale: 'Hopital Principal Dakar', invitePar: 'Mme Niang Cor', pointRamassage: 'HLM Grand-Yoff' },
+      { ...VALID, nom: 'Sagna', prenom: 'Yacine', telephone: '+221781234567', invitePar: 'Maguette Diop', pointRamassage: 'EDK Pikine' },
+      { ...VALID, nom: 'Ndiaye', prenom: 'Aminata', telephone: '701112233', structureMedicale: 'Hopital Principal Dakar', invitePar: 'Mme Sow Aminata', pointRamassage: 'Terminus DEM DIK-HLM GRAND YOFF' },
+      { ...VALID, nom: 'Fall', prenom: 'Moussa', telephone: '778899001', structureMedicale: 'Hopital Principal Dakar', invitePar: 'Mme Niang Cor', pointRamassage: 'EDK Pikine' },
     ];    for (const body of autres) {
       const r = await api('/api/registrations', { method: 'POST', body });
       check(`inscription ${body.prenom} ${body.nom}`, r.status === 201, `recu ${r.status}`);
     }
 
-    const totalAttendu = 1 + 1 + autres.length; // + tiret + 1ere + 3 autres
+    const totalAttendu = 1 + 1 + 1 + autres.length; // + tiret + presence + 1ere + 3 autres
     const stats = await api('/api/registrations/stats');
     check('compteur public', stats.payload.data.total === totalAttendu,
       `${stats.payload.data.total} != ${totalAttendu}`);
@@ -196,6 +216,13 @@ async function run() {
     check('lignes retournees', dash.payload.data.items.length === totalAttendu);
     check('2 structures distinctes', dash.payload.data.valeurs.structures.length === 2,
       JSON.stringify(dash.payload.data.valeurs.structures));
+    check('2 valeurs de presence', (dash.payload.data.valeurs.presence || []).length === 2,
+      JSON.stringify(dash.payload.data.valeurs.presence));
+    const presenceOui = (dash.payload.data.repartition.parPresence || []).find(
+      (r) => r.value === 'Oui'
+    );
+    check('repartition presence : Oui dominant', presenceOui?.count === totalAttendu - 1,
+      JSON.stringify(dash.payload.data.repartition.parPresence));
     uniques.clear();
     dash.payload.data.items.forEach((i) => uniques.add(i.numeroInscription));
     check('numeros uniques', uniques.size === totalAttendu, `${uniques.size}/${totalAttendu}`);
@@ -210,23 +237,29 @@ async function run() {
     const recherchePrenom = await api('/api/registrations/dashboard?q=awa', { token });
     check('recherche par prenom', recherche.payload.data.filteredCount === 1,
       String(recherche.payload.data.filteredCount));
-    const filtreInvite = await api('/api/registrations/dashboard?invitePar=Maguette%20Diop', {
+    const filtreInvite = await api('/api/registrations/dashboard?invitePar=Mme%20Maguette%20Diop', {
       token,
     });
     check('filtre invite (1 resultat)', filtreInvite.payload.data.filteredCount === 1,
       String(filtreInvite.payload.data.filteredCount));
+    check('libelle invitant canonique enregistre',
+      filtreInvite.payload.data.items[0]?.invitePar === 'Mme Maguette Diop',
+      filtreInvite.payload.data.items[0]?.invitePar);
     const filtreInviteMinuscule = await api(
-      '/api/registrations/dashboard?invitePar=maguette%20diop',
+      '/api/registrations/dashboard?invitePar=mme%20maguette%20diop',
       { token }
     );
     check('filtre invite insensible a la casse', filtreInviteMinuscule.payload.data.filteredCount === 1,
       String(filtreInviteMinuscule.payload.data.filteredCount));
     const filtrePoint = await api(
-      `/api/registrations/dashboard?pointRamassage=${encodeURIComponent('HLM Grand-Yoff')}`,
+      `/api/registrations/dashboard?pointRamassage=${encodeURIComponent('Terminus DEM DIK-HLM GRAND YOFF')}`,
       { token }
     );
-    check('filtre point de ramassage (2)', filtrePoint.payload.data.filteredCount === 2,
+    check('filtre point de ramassage cumule (3)', filtrePoint.payload.data.filteredCount === 3,
       String(filtrePoint.payload.data.filteredCount));
+    const filtrePresence = await api('/api/registrations/dashboard?presence=Non', { token });
+    check('filtre presence (Non = 1)', filtrePresence.payload.data.filteredCount === 1,
+      String(filtrePresence.payload.data.filteredCount));
     const filtreStructure = await api(
       `/api/registrations/dashboard?structureMedicale=${encodeURIComponent('Hopital Principal Dakar')}`,
       { token }
@@ -234,7 +267,7 @@ async function run() {
     check('filtre structure medicale (2)', filtreStructure.payload.data.filteredCount === 2,
       String(filtreStructure.payload.data.filteredCount));
     const filtreCombine = await api(
-      `/api/registrations/dashboard?invitePar=Maguette%20Diop&pointRamassage=${encodeURIComponent('HLM Grand-Yoff')}`,
+      `/api/registrations/dashboard?invitePar=Mme%20Maguette%20Diop&pointRamassage=${encodeURIComponent('EDK Pikine')}`,
       { token }
     );
     check('filtres combines', filtreCombine.payload.data.filteredCount === 1,
@@ -255,6 +288,9 @@ async function run() {
     check('CSV : BOM UTF-8 (EF BB BF)', csvBrut[0] === 0xef && csvBrut[1] === 0xbb && csvBrut[2] === 0xbf,
       [...csvBrut.subarray(0, 3)].map((b) => b.toString(16)).join(' '));
     check('CSV : en-tetes FR', lignesCsv[0].includes('Structure médicale'));
+    check('CSV : colonne presence', lignesCsv[0].includes('Présence confirmée'));
+    check('CSV : invite formate', lignesCsv.some((l) => l.includes('M. Maixent Dione')),
+      lignesCsv[1]);
     check('CSV : numero present', lignesCsv.some((l) => l.includes('EXPHA-2026-0001')));
     check('CSV : accents preserves', String(csv.payload).includes('Prénom'),
       lignesCsv[0]);
@@ -264,10 +300,10 @@ async function run() {
     check('Excel : en-tetes FR', String(xls.payload).includes('Point de ramassage'));
 
     const csvFiltre = await api(
-      `/api/registrations/export.csv?pointRamassage=${encodeURIComponent('HLM Grand-Yoff')}`,
+      `/api/registrations/export.csv?presence=Non`,
       { token }
     );
-    check('export CSV filtre (2 lignes)', csvFiltre.payload.trim().split('\r\n').length === 3,
+    check('export CSV filtre par presence (1 ligne)', csvFiltre.payload.trim().split('\r\n').length === 2,
       String(csvFiltre.payload.trim().split('\r\n').length));
 
     check('export sans jeton refuse', (await api('/api/registrations/export.csv')).status === 401);

@@ -3,6 +3,7 @@
 const mongoose = require('mongoose');
 const config = require('./config');
 const app = require('./app');
+const { runMigrations } = require('./lib/migrations');
 
 async function connectMongo() {
   mongoose.set('strictQuery', true);
@@ -21,8 +22,9 @@ function redact(uri) {
 async function start() {
   try {
     await connectMongo();
+    await runMigrations();
   } catch (err) {
-    console.error('[mongo] echec de connexion :', err.message);
+    console.error('[mongo] echec au demarrage :', err.message);
     console.error('[mongo] Verifiez MONGODB_URI dans le fichier .env');
     process.exit(1);
   }

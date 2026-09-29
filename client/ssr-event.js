@@ -11,14 +11,11 @@ export const EVENT = {
 export const INVITE_PAR = [
   'Maixent Dione',
   'Mme Gaye Khady Sokhna',
-  'Maguette Diop',
+  'Mme Maguette Diop',
   'Mme Sow Aminata',
   'Mme Niang Cor',
 ];
 
-export const POINTS_RAMASSAGE = [
-  'Terminus Dem Dikk',
-  'EDK Pikine',
-  'Sortie 9 – Sedima',
-  'HLM Grand-Yoff',
-];
+export const POINTS_RAMASSAGE = ['Terminus DEM DIK-HLM GRAND YOFF', 'EDK Pikine', 'Sortie 9 – Sedima'];
+
+export const PRESENCE = ['Oui', 'Non'];

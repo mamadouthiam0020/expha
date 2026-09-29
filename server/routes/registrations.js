@@ -10,7 +10,7 @@ const { fetchForExport, toCsv, toExcelHtml, timestampName } = require('../lib/ex
 const { requireAdmin, verifyToken } = require('../middleware/auth');
 const hub = require('../lib/eventsHub');
 const config = require('../config');
-const { INSCRIPTION_PREFIX, COUNTER_KEY, INVITE_PAR, POINTS_RAMASSAGE } = require('../config/event');
+const { INSCRIPTION_PREFIX, COUNTER_KEY, INVITE_PAR, POINTS_RAMASSAGE, PRESENCE_CHOICES } = require('../config/event');
 
 const router = express.Router();
 
@@ -72,8 +72,10 @@ router.post('/', registrationLimiter, async (req, res, next) => {
         nom: registration.nom,
         prenom: registration.prenom,
         telephone: registration.telephone,
+        structureMedicale: registration.structureMedicale,
         invitePar: registration.invitePar,
         pointRamassage: registration.pointRamassage,
+        presence: registration.presence,
         createdAt: registration.createdAt,
       },
     });
@@ -86,7 +88,10 @@ router.post('/', registrationLimiter, async (req, res, next) => {
 /*  GET /api/registrations/config  -  options des listes (public)        */
 /* ------------------------------------------------------------------ */
 router.get('/config', (req, res) => {
-  res.json({ ok: true, data: { invitePar: INVITE_PAR, pointRamassage: POINTS_RAMASSAGE } });
+  res.json({
+    ok: true,
+    data: { invitePar: INVITE_PAR, pointRamassage: POINTS_RAMASSAGE, presence: PRESENCE_CHOICES },
+  });
 });
 
 /* ------------------------------------------------------------------ */

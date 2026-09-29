@@ -5,6 +5,8 @@ const {
   POINTS_RAMASSAGE,
   INVITE_PAR_MAP,
   POINTS_RAMASSAGE_MAP,
+  PRESENCE_CHOICES,
+  PRESENCE_MAP,
   canonicalFrom,
 } = require('../config/event');
 
@@ -84,6 +86,15 @@ function validateRegistration(payload) {
     errors.pointRamassage = `Valeur invalide. Options : ${POINTS_RAMASSAGE.join(', ')}`;
   } else {
     value.pointRamassage = pointRamassage;
+  }
+
+  const presence = canonicalFrom(body.presence, PRESENCE_MAP);
+  if (!cleanText(body.presence)) {
+    errors.presence = 'Merci de confirmer votre presence a la journee.';
+  } else if (!presence) {
+    errors.presence = `Valeur invalide. Options : ${PRESENCE_CHOICES.join(', ')}`;
+  } else {
+    value.presence = presence;
   }
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };

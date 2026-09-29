@@ -113,6 +113,22 @@ a:hover { text-decoration: underline; }
   flex: none;
 }
 
+.brand-logo {
+  height: 38px;
+  width: auto;
+  max-width: 220px;
+  object-fit: contain;
+  display: block;
+}
+
+.brand-suffix {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--ink-mute);
+  border-left: 1px solid var(--line);
+  padding-left: 10px;
+}
+
 .header-meta {
   display: flex;
   align-items: center;
@@ -148,6 +164,11 @@ a:hover { text-decoration: underline; }
   flex-wrap: wrap;
   gap: 8px 20px;
   justify-content: space-between;
+}
+.site-footer .credit {
+  font-weight: 800;
+  color: var(--primary-dark);
+  letter-spacing: 0.04em;
 }
 
 /* ---------------------------- Hero ------------------------------ */
@@ -249,6 +270,57 @@ a:hover { text-decoration: underline; }
   font-size: 0.9rem;
   margin-bottom: 6px;
   color: var(--ink);
+}
+
+.field .field-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+
+/* Groupe de reponses (oui / non) */
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.field .choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0;
+  padding: 11px 20px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  user-select: none;
+}
+.field .choice:hover {
+  border-color: var(--primary);
+}
+.field .choice input {
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+.field .choice.is-active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+.field .choice.is-invalid {
+  border-color: var(--danger);
+  background: var(--danger-bg);
 }
 
 .field .required {
@@ -438,6 +510,24 @@ select.invalid {
 .recap div:last-child { border-bottom: none; }
 .recap span:first-child { color: var(--ink-mute); font-weight: 600; }
 .recap span:last-child { font-weight: 700; text-align: right; }
+
+.tag {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.tag-yes {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid #bbf7d0;
+}
+.tag-no {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid #fecaca;
+}
 
 .counter-strip {
   display: flex;

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import logo from '../assets/image.png';
 
 export default function Layout({ children }) {
   const year = new Date().getFullYear();
@@ -7,8 +8,7 @@ export default function Layout({ children }) {
       <header className="site-header">
         <div className="container">
           <Link className="brand" to="/">
-            <span className="brand-mark">E</span>
-            <span>EXPHA</span>
+            <img className="brand-logo" src={logo} alt="EXPHA" />
           </Link>
           <div className="header-meta">
             <span className="hide-sm">17 octobre 2026 — Hôtel Africa Queen – Somone</span>
@@ -26,7 +26,7 @@ export default function Layout({ children }) {
           <span>
             © {year} EXPHA — Journée de formation et de détente
           </span>
-          <span>Réalisé pour un usage simple et professionnel.</span>
+          <span className="credit">Made by Mounir DIGITAL</span>
         </div>
       </footer>
     </div>

@@ -3,7 +3,9 @@
 const Registration = require('../models/Registration');
 const { normalizeLabel } = require('../config/event');
 
-const FILTERABLE = ['invitePar', 'pointRamassage', 'structureMedicale'];
+const FILTERABLE = ['invitePar', 'pointRamassage', 'structureMedicale', 'presence'];
+/** Listes comparees telles quelles (pas de normalisation de libelle). */
+const EXACT_FILTERABLE = ['structureMedicale', 'presence'];
 const SORTABLE = {
   createdAt: { createdAt: 1 },
   createdAtDesc: { createdAt: -1 },
@@ -20,7 +22,7 @@ function escapeRegex(str) {
 
 /**
  * Construit le filtre Mongo a partir des query params de l'API admin.
- * Supporte : q (recherche), invitePar, pointRamassage, structureMedicale,
+ * Supporte : q (recherche), invitePar, pointRamassage, structureMedicale, presence,
  * inviteParList / pointRamassageList (filtres multiples), from, to.
  */
 function buildFilter(query = {}) {
@@ -42,7 +44,7 @@ function buildFilter(query = {}) {
 
     if (values.length === 0) return;
 
-    if (field === 'structureMedicale') {
+    if (EXACT_FILTERABLE.includes(field)) {
       filter[field] = { $in: values };
       return;
     }
@@ -103,26 +105,39 @@ async function groupCounts(field) {
 /** Statistiques calculees sur la liste filtree + valeurs distinctes pour les filtres. */
 async function getAdminData(query = {}) {
   const filter = buildFilter(query);
-  const [items, total, filteredCount, invitePar, pointRamassage, structures, dernieres, parInvite, parPoint] =
-    await Promise.all([
-      Registration.find(filter).sort(buildSort(query)).limit(5000).lean(),
-      Registration.countDocuments({}),
-      Registration.countDocuments(filter),
-      Registration.distinct('invitePar'),
-      Registration.distinct('pointRamassage'),
-      Registration.distinct('structureMedicale'),
-      Registration.find({}).sort({ createdAt: -1 }).limit(1).lean(),
-      groupCounts('invitePar'),
-      groupCounts('pointRamassage'),
-    ]);
+  const [
+    items,
+    total,
+    filteredCount,
+    invitePar,
+    pointRamassage,
+    structures,
+    presences,
+    dernieres,
+    parInvite,
+    parPoint,
+    parPresence,
+  ] = await Promise.all([
+    Registration.find(filter).sort(buildSort(query)).limit(5000).lean(),
+    Registration.countDocuments({}),
+    Registration.countDocuments(filter),
+    Registration.distinct('invitePar'),
+    Registration.distinct('pointRamassage'),
+    Registration.distinct('structureMedicale'),
+    Registration.distinct('presence'),
+    Registration.find({}).sort({ createdAt: -1 }).limit(1).lean(),
+    groupCounts('invitePar'),
+    groupCounts('pointRamassage'),
+    groupCounts('presence'),
+  ]);
 
   return {
     items,
     total,
     filteredCount,
     dernieresInscription: dernieres[0] || null,
-    valeurs: { invitePar, pointRamassage, structures: structures.sort() },
-    repartition: { parInvite, parPoint },
+    valeurs: { invitePar, pointRamassage, structures: structures.sort(), presence: presences },
+    repartition: { parInvite, parPoint, parPresence },
   };
 }
 

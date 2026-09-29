@@ -2,7 +2,7 @@
 
 const Registration = require('../models/Registration');
 const { buildFilter, buildSort } = require('./registrationsService');
-const { EVENT } = require('../config/event');
+const { EVENT, formatInviter } = require('../config/event');
 
 const COLUMNS = [
   { key: 'numeroInscription', header: 'N° inscription' },
@@ -13,6 +13,7 @@ const COLUMNS = [
   { key: 'structureMedicale', header: 'Structure médicale' },
   { key: 'invitePar', header: 'Invité(e) par' },
   { key: 'pointRamassage', header: 'Point de ramassage' },
+  { key: 'presence', header: 'Présence confirmée' },
 ];
 
 function escapeCsv(value) {
@@ -44,6 +45,8 @@ function buildRows(items) {
           return formatDate(item.createdAt);
         case 'telephone':
           return telForExcel(item.telephone);
+        case 'invitePar':
+          return formatInviter(item.invitePar);
         default:
           return item[col.key];
       }

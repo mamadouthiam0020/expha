@@ -16,8 +16,14 @@ export function normalizePhone(value) {
 }
 
 export function formatPhoneInput(value) {
-  // Affichage lisible pendant la saisie : 77 123 45 67
-  let digits = String(value || '').replace(/[^\d]/g, '').slice(0, 9);
+  // Affichage lisible pendant la saisie : 77 XXX XX XX
+  // (les prefixes 00221 / +221 / 221 saisis sont absorbes)
+  let digits = String(value || '')
+    .replace(/\D/g, '')
+    .slice(0, 11);
+  if (digits.startsWith('00')) digits = digits.slice(2);
+  if (digits.startsWith('221') && digits.length > 9) digits = digits.slice(3);
+  digits = digits.slice(0, 9);
   if (!digits) return '';
   return digits.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
 }
@@ -26,7 +32,7 @@ export function formatPhoneInput(value) {
  * @returns {object} objet d'erreurs (vide si tout est valide)
  */
 export function validateRegistration(values, options = {}) {
-  const { invitePar = [], pointRamassage = [] } = options;
+  const { invitePar = [], pointRamassage = [], presence = [] } = options;
   const errors = {};
 
   const nom = cleanText(values.nom);
@@ -59,6 +65,12 @@ export function validateRegistration(values, options = {}) {
   if (!cleanText(values.pointRamassage)) errors.pointRamassage = 'Merci de choisir un point de ramassage.';
   else if (pointRamassage.length && !pointRamassage.includes(values.pointRamassage)) {
     errors.pointRamassage = 'Valeur non autorisée.';
+  }
+
+  if (!cleanText(values.presence))
+    errors.presence = 'Merci de répondre à la question de confirmation de présence.';
+  else if (presence.length && !presence.includes(values.presence)) {
+    errors.presence = 'Valeur non autorisée.';
   }
 
   return errors;

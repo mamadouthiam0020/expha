@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Layout from '../components/Layout';
 import { useEventConfig } from '../lib/eventConfig';
 import { postRegistration, getPublicStats } from '../lib/api';
 import { validateRegistration, hasErrors, cleanText, formatPhoneInput } from '../lib/validation';
+import { formatInviter, formatPhone } from '../lib/format';
 
 const EMPTY = {
   nom: '',
@@ -11,10 +12,11 @@ const EMPTY = {
   structureMedicale: '',
   invitePar: '',
   pointRamassage: '',
+  presence: '',
 };
 
 export default function Home() {
-  const { event, invitePar, pointRamassage } = useEventConfig();
+  const { event, invitePar, pointRamassage, presence } = useEventConfig();
   const [values, setValues] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [globalError, setGlobalError] = useState('');
@@ -22,6 +24,12 @@ export default function Home() {
   const [confirmation, setConfirmation] = useState(null);
   const [stats, setStats] = useState(null);
   const formRef = useRef(null);
+
+  const dateLongue = useMemo(() => {
+    const d = event.dateISO ? new Date(`${event.dateISO}T00:00:00`) : null;
+    if (!d || Number.isNaN(d.getTime())) return event.dateLabel;
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }, [event.dateISO, event.dateLabel]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -52,7 +60,7 @@ export default function Home() {
     e.preventDefault();
     if (submitting) return;
 
-    const found = validateRegistration(values, { invitePar, pointRamassage });
+    const found = validateRegistration(values, { invitePar, pointRamassage, presence });
     setErrors(found);
     if (hasErrors(found)) {
       const firstKey = Object.keys(found)[0];
@@ -74,6 +82,7 @@ export default function Home() {
         structureMedicale: cleanText(values.structureMedicale),
         invitePar: values.invitePar,
         pointRamassage: values.pointRamassage,
+        presence: values.presence,
       });
       setConfirmation(res.data);
       setValues(EMPTY);
@@ -143,15 +152,25 @@ export default function Home() {
                 </div>
                 <div>
                   <span>Téléphone</span>
-                  <span>{confirmation.telephone}</span>
+                  <span>{formatPhone(confirmation.telephone)}</span>
+                </div>
+                <div>
+                  <span>Structure médicale</span>
+                  <span>{confirmation.structureMedicale}</span>
                 </div>
                 <div>
                   <span>Invité(e) par</span>
-                  <span>{confirmation.invitePar}</span>
+                  <span>{formatInviter(confirmation.invitePar)}</span>
                 </div>
                 <div>
                   <span>Point de ramassage</span>
                   <span>{confirmation.pointRamassage}</span>
+                </div>
+                <div>
+                  <span>Présence confirmée</span>
+                  <span className={confirmation.presence === 'Oui' ? 'tag tag-yes' : 'tag tag-no'}>
+                    {confirmation.presence}
+                  </span>
                 </div>
               </div>
 
@@ -225,13 +244,13 @@ export default function Home() {
                     value={values.telephone}
                     onChange={handleChange('telephone')}
                     autoComplete="tel"
-                    placeholder="77 123 45 67"
+                    placeholder="77 000 00 00"
                     aria-invalid={Boolean(errors.telephone)}
                   />
                   {errors.telephone ? (
                     <span className="field-error">{errors.telephone}</span>
                   ) : (
-                    <span className="hint">Format sénégalais (9 chiffres) ou +221...</span>
+                    <span className="hint">Format sénégalais : 77 XXX XX XX</span>
                   )}
                 </div>
 
@@ -269,7 +288,7 @@ export default function Home() {
                     <option value="">— Choisir —</option>
                     {invitePar.map((item) => (
                       <option key={item} value={item}>
-                        {item}
+                        {formatInviter(item)}
                       </option>
                     ))}
                   </select>
@@ -300,12 +319,39 @@ export default function Home() {
                   )}
                 </div>
 
+                <div className="field">
+                  <span className="field-label" id="presence-label">
+                    Confirmez-vous votre présence le {dateLongue} ?
+                    <span className="required">*</span>
+                  </span>
+                  <div className="choices" role="radiogroup" aria-labelledby="presence-label">
+                    {presence.map((item) => (
+                      <label
+                        key={item}
+                        className={`choice${values.presence === item ? ' is-active' : ''}${
+                          errors.presence ? ' is-invalid' : ''
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="presence"
+                          value={item}
+                          checked={values.presence === item}
+                          onChange={handleChange('presence')}
+                        />
+                        <span>{item}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {errors.presence && <span className="field-error">{errors.presence}</span>}
+                </div>
+
                 <button
                   type="submit"
                   className="btn btn-primary btn-lg btn-block"
                   disabled={submitting}
                 >
-                  {submitting ? 'Enregistrement…' : "S'inscrire"}
+                  {submitting ? 'Enregistrement…' : 'Soumettre le formulaire'}
                 </button>
               </form>
             </div>
